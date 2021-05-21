@@ -15,25 +15,31 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
+class CustomText extends StatelessWidget {
+  const CustomText({Key key, this.text}) : super(key: key);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text("$text", style: TextStyle(fontSize: 36));
+  }
+}
 
 
 class _MyAppState extends State<MyApp> {
 
-  //get a random nr between 1 .. 100
-  //input try the number
-  //if lower.. try higher
-  //if higher.. try lower
-  //if equla.. got it
+  //de ce state are efect doar cu variabilele declarate  aici ?
+  CustomText _appResponse = CustomText(text:'Some text');
+  static Random  _random = new Random();
+  static int _randomNumber = _random.nextInt(100);
 
+  int _guessedNr = 0;
+  String _buttonText = "Guess";
+  TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    Random _random= new Random();
-    int _randomNumber = _random.nextInt(100);
-    int _guessedNr = 0;
-    TextEditingController _controller = TextEditingController();
-    String _appResponse = "";
-
+    //de ce random merge doar aici
 
     print('randomnumber: $_randomNumber');
 
@@ -49,14 +55,19 @@ class _MyAppState extends State<MyApp> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Text("I am thinking about a number between 1 and 100. \n It's your turn to guess my number.",
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 24),
               ),
+              _appResponse,
               Card(
                 margin: EdgeInsets.all(0.5),
                 elevation: 5,
                 child: Column(
                   children: [
-                    Text("Try a number!", style: TextStyle(fontSize: 24),),
+
+                    Text(
+                      "Try a number!",
+                      style: TextStyle(fontSize: 24),
+                    ),
                     TextField(
                       controller: _controller,
                       keyboardType: TextInputType.number,
@@ -67,25 +78,62 @@ class _MyAppState extends State<MyApp> {
                             int _guessedNr = int.parse(_controller.text);
 
                             if( _randomNumber == _guessedNr) {
-                              print('ok');
+                                _buttonText = "reset";
+
+                                //todo - extract widget showDialog
+                                showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: Text('You guessed right'),
+                                      content: Text('It was $_randomNumber'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context, 'Cancel');
+                                            _randomNumber = _random.nextInt(100);
+                                            _appResponse = CustomText(text:'');
+                                            _buttonText = "Guess";
+                                            _controller.clear();
+                                            setState(() {
+                                           });
+                                          },
+                                          child: Text('Try again'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                              Navigator.pop(context, 'Cancel');
+                                              _randomNumber = _random.nextInt(100);
+                                              setState(() {
+                                                _randomNumber;
+                                                _controller.clear();
+                                              }
+                                            );
+                                          },
+                                              child: Text('ok'),
+                                          ),
+                                        ],
+                                    ),
+                                );
+
                             }else if(_randomNumber > _guessedNr) {
-                              print('go higher');
+                              _appResponse = CustomText(text:'You tried $_guessedNr Try higher');
                             }else if(_randomNumber < _guessedNr) {
-                              print('go lower');
+                              _appResponse = CustomText(text:'You tried $_guessedNr Try lower');
                             }else{
-                              print('Some stupid exceptional case');
+                              _appResponse = CustomText(text:'Some stupid exception');
                             }
 
                             setState(() {
-                              _appResponse = "You tried $_guessedNr ";
-                              print("ssss$_appResponse");
+                              _appResponse ;
+                              _buttonText;
+                              _controller.clear();
                             });
 
                           } catch(s, e) {
                            print(numberValidator(_controller.text));
                         }
-                    },
-                        child: Text("Guess"))
+                      },
+                        child: Text("$_buttonText"),
+                    ),
                   ],
                 ),
               ),
@@ -95,8 +143,6 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-
-
 
    String numberValidator(String value) {
 
