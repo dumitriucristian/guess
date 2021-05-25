@@ -1,71 +1,67 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MaterialApp(
-    title: 'Guess',
-    home: MyApp()
-  ));
+  runApp(const MaterialApp(title: 'Guess', home: MyApp()));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
 }
 
-class CustomText extends StatelessWidget {
-  const CustomText({Key key, this.text}) : super(key: key);
+class CustomText extends StatefulWidget {
+  const CustomText({Key? key, required this.text}) : super(key: key);
   final String text;
 
   @override
+  _CustomTextState createState() => _CustomTextState();
+}
+
+class _CustomTextState extends State<CustomText> {
+  @override
   Widget build(BuildContext context) {
-    return Text("$text", style: TextStyle(fontSize: 36));
+    return Text(widget.text, style: const TextStyle(fontSize: 36));
   }
 }
 
-
 class _MyAppState extends State<MyApp> {
+  CustomText _appResponse = const CustomText(text: 'Some text');
+  Random random = Random();
 
-  //de ce state are efect doar cu variabilele declarate  aici ?
-  CustomText _appResponse = CustomText(text:'Some text');
-  static Random  _random = new Random();
-  static int _randomNumber = _random.nextInt(100);
-
-  int _guessedNr = 0;
-  String _buttonText = "Guess";
-  TextEditingController _controller = TextEditingController();
+  String _buttonText = 'Guess';
+  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     //de ce random merge doar aici
-
-    print('randomnumber: $_randomNumber');
+    int randomNumber = random.nextInt(100);
+    print('randomnumber: $randomNumber');
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Guess my number'),
+        title: const Text('Guess my number'),
       ),
       body: Center(
-
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Text("I am thinking about a number between 1 and 100. \n It's your turn to guess my number.",
-                  style: TextStyle(fontSize: 24),
+            children: <Widget>[
+              const Text(
+                "I am thinking about a number between 1 and 100. \n It's your turn to guess my number.",
+                style: TextStyle(fontSize: 24),
               ),
               _appResponse,
               Card(
-                margin: EdgeInsets.all(0.5),
+                margin: const EdgeInsets.all(0.5),
                 elevation: 5,
                 child: Column(
-                  children: [
-
-                    Text(
-                      "Try a number!",
+                  children: <Widget>[
+                    const Text(
+                      'Try a number!',
                       style: TextStyle(fontSize: 24),
                     ),
                     TextField(
@@ -73,66 +69,67 @@ class _MyAppState extends State<MyApp> {
                       keyboardType: TextInputType.number,
                     ),
                     ElevatedButton(
-                        onPressed: (){
-                          try{
-                            int _guessedNr = int.parse(_controller.text);
+                      onPressed: () {
+                        try {
+                          final int _guessedNr = int.parse(_controller.text);
 
-                            if( _randomNumber == _guessedNr) {
-                                _buttonText = "reset";
+                          if (randomNumber == _guessedNr) {
+                            _buttonText = 'reset';
 
-                                //todo - extract widget showDialog
-                                showDialog(context: context,
-                                    builder: (BuildContext context) => AlertDialog(
-                                      title: Text('You guessed right'),
-                                      content: Text('It was $_randomNumber'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context, 'Cancel');
-                                            _randomNumber = _random.nextInt(100);
-                                            _appResponse = CustomText(text:'');
-                                            _buttonText = "Guess";
-                                            _controller.clear();
-                                            setState(() {
-                                           });
-                                          },
-                                          child: Text('Try again'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                              Navigator.pop(context, 'Cancel');
-                                              _randomNumber = _random.nextInt(100);
-                                              setState(() {
-                                                _randomNumber;
-                                                _controller.clear();
-                                              }
-                                            );
-                                          },
-                                              child: Text('ok'),
-                                          ),
-                                        ],
-                                    ),
-                                );
+                            //todo - extract widget showDialog
+                            showDialog<void>(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('You guessed right'),
+                                content: Text('It was $randomNumber'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context, 'Cancel');
+                                      randomNumber = random.nextInt(100);
+                                      _appResponse = const CustomText(text: '');
+                                      _buttonText = 'Guess';
+                                      _controller.clear();
+                                      setState(() {});
+                                    },
+                                    child: const Text('Try again'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context, 'Cancel');
 
-                            }else if(_randomNumber > _guessedNr) {
-                              _appResponse = CustomText(text:'You tried $_guessedNr Try higher');
-                            }else if(_randomNumber < _guessedNr) {
-                              _appResponse = CustomText(text:'You tried $_guessedNr Try lower');
-                            }else{
-                              _appResponse = CustomText(text:'Some stupid exception');
-                            }
+                                      setState(() {
+                                        randomNumber = random.nextInt(100);
+                                        _controller.clear();
+                                      });
+                                    },
+                                    child: const Text('ok'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else if (randomNumber > _guessedNr) {
+                            _appResponse = CustomText(text: 'You tried $_guessedNr Try higher');
+                          } else if (randomNumber < _guessedNr) {
+                            _appResponse = CustomText(text: 'You tried $_guessedNr Try lower');
+                          } else {
+                            _appResponse = const CustomText(text: 'Some stupid exception');
+                          }
 
-                            setState(() {
-                              _appResponse ;
-                              _buttonText;
-                              _controller.clear();
-                            });
+                          setState(() {
+                            _controller.clear();
+                          });
+                        } catch (s) {
+                          if (_controller.text == null) {
+                            print('Please provide a number betweeen 0 and 100, not an empty string');
+                          }
 
-                          } catch(s, e) {
-                           print(numberValidator(_controller.text));
+                          if (num.tryParse(_controller.text) == null) {
+                            print('Please provide a number between 0 and 100. Only numbers allowed');
+                          }
                         }
                       },
-                        child: Text("$_buttonText"),
+                      child: Text(_buttonText),
                     ),
                   ],
                 ),
@@ -143,17 +140,4 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-
-   String numberValidator(String value) {
-
-     if(value == null) {
-       return "Please provide a number betweeen 0 and 100, not an empty string";
-     }
-
-     final n = num.tryParse(value);
-     if(n == null) {
-       return "Please provide a number between 0 and 100. Only numbers allowed";
-     }
-     return null;
-   }
 }
